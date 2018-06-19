@@ -576,6 +576,18 @@ def aws_host(resource, module_name, **kwargs):
         'private_ipv4': raw_attrs['private_ip'],
         'provider': 'aws',
     }
+    # setup ansible connection for Windows instance
+    is_windows = False
+    if 'tags.osType' in raw_attrs:
+        if raw_attrs['tags.osType'].lower() == 'windows':
+            is_windows = True
+
+    if is_windows:
+        attrs['ansible_user'] = raw_attrs.get('tags.sshUser', '')
+        attrs['ansible_port'] = 5986
+        attrs['ansible_connection'] = 'winrm'
+        attrs['ansible_winrm_server_cert_validation'] = 'ignore'
+
 
     # attrs specific to Ansible
     if 'tags.sshUser' in raw_attrs:
